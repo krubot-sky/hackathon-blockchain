@@ -1,0 +1,30 @@
+---
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: tls-ca-pv
+  labels:
+    app: tls-ca
+spec:
+  storageClassName: standard
+  capacity:
+    storage: 5Gi
+  accessModes:
+    - ReadWriteMany
+  hostPath:
+    path: "/mnt/hyperledger/tls-ca"
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  namespace: hyperledger
+  name: tls-ca-pvc
+  labels:
+    app: tls-ca
+spec:
+  storageClassName: standard
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 5Gi
