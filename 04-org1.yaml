@@ -2,6 +2,75 @@
 apiVersion: v1
 kind: Service
 metadata:
+  name: caorg1
+  namespace: hyperledger
+spec:
+  type: ClusterIP
+  selector:
+    app: caorg1
+  ports:
+  - protocol: TCP
+    port: 7054
+    targetPort: 7054
+    name: http
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: caorg1
+  namespace: hyperledger
+  labels:
+    app: caorg1
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: caorg1
+  template:
+    metadata:
+      labels:
+        app: caorg1
+    spec:
+      containers:
+      - name: caorg1
+        image: hyperledger/fabric-ca:latest
+        command: ["sh", "-c", "fabric-ca-server start -b admin:adminpw -d"]
+        ports:
+        - containerPort: 7054
+        env:
+        - name: TZ
+          value: "Europe/London"
+        - name: FABRIC_CA_SERVER_CA_NAME
+          value: "CA1"
+        - name: FABRIC_CA_SERVER_CA_CERTFILE
+          value: /fabric/crypto-config/peerOrganizations/org1.example.com/ca/ca.org1.example.com-cert.pem
+        - name: FABRIC_CA_SERVER_CA_KEYFILE
+          value: /fabric/crypto-config/peerOrganizations/org1.example.com/ca/key.pem
+        - name: FABRIC_CA_SERVER_DEBUG
+          value: "true"
+        - name: FABRIC_CA_SERVER_TLS_ENABLED
+          value: "false"
+        - name: FABRIC_CA_SERVER_TLS_CERTFILE
+          value: /certs/ca0a-cert.pem
+        - name: FABRIC_CA_SERVER_TLS_KEYFILE
+          value: /certs/ca0a-key.pem
+        - name: GODEBUG
+          value: "netdns=go"
+        resources:
+          limits:
+            memory: "128Mi"
+            cpu: "100m"
+        volumeMounts:
+        - mountPath: /fabric
+          name: fabricfiles
+      volumes:
+      - name: fabricfiles
+        persistentVolumeClaim:
+          claimName: fabric
+---
+apiVersion: v1
+kind: Service
+metadata:
   name: org1peer1
   namespace: hyperledger
 spec:
@@ -52,20 +121,20 @@ spec:
         - name: CORE_PEER_ID
           value: org1peer1
         - name: CORE_PEER_ADDRESS
-          value: org1peer1:30110
+          value: 127.0.0.1:30110
         #- name: CORE_PEER_CHAINCODELISTENADDRESS
         #  value: "localhost:30110"
         #CORE_PEER_GOSSIP_EXTERNALENDPOINT for Hyperledger Explorer
         - name: CORE_PEER_GOSSIP_EXTERNALENDPOINT
-          value: org1peer1:30110
+          value: 127.0.0.1:30110
         - name: CORE_PEER_LISTENADDRESS
           value: 0.0.0.0:30110
         - name: CORE_PEER_EVENTS_ADDRESS
           value: 0.0.0.0:30111
         - name: CORE_PEER_GOSSIP_BOOTSTRAP
-          value: org1peer1:30110
+          value: 127.0.0.1:30110
         - name: CORE_PEER_GOSSIP_ENDPOINT
-          value: org1peer1:30110
+          value: 127.0.0.1:30110
         - name: CORE_PEER_GOSSIP_ORGLEADER
           value: "false"
         - name: CORE_PEER_GOSSIP_USELEADERELECTION
@@ -118,7 +187,7 @@ spec:
           value: "true"
         volumeMounts:
         - mountPath: /fabric
-          name: myvolume
+          name: fabricfiles
         ports:
         - containerPort: 30110
         - containerPort: 30111
@@ -139,9 +208,9 @@ spec:
           - name: dind-storage
             mountPath: /var/lib/docker
       volumes:
-      - name: myvolume
+      - name: fabricfiles
         persistentVolumeClaim:
-          claimName: tls-ca-pvc
+          claimName: fabric
       - name: dind-storage
         emptyDir: {}
 ---
@@ -185,7 +254,7 @@ spec:
         app: org1peer2
     spec:
       containers:
-      - name: org1peer1
+      - name: org1peer2
         image: hyperledger/fabric-peer:1.4.3
         command: ["sh", "-c", "peer node start"]
         env:
@@ -196,22 +265,22 @@ spec:
         - name: CORE_PEER_NETWORKID
           value: nid1
         - name: CORE_PEER_ID
-          value: org1peer1
+          value: org1peer2
         - name: CORE_PEER_ADDRESS
-          value: org1peer1:30110
+          value: 127.0.0.1:30110
         #- name: CORE_PEER_CHAINCODELISTENADDRESS
         #  value: "localhost:30110"
         #CORE_PEER_GOSSIP_EXTERNALENDPOINT for Hyperledger Explorer
         - name: CORE_PEER_GOSSIP_EXTERNALENDPOINT
-          value: org1peer1:30110
+          value: 127.0.0.1:30110
         - name: CORE_PEER_LISTENADDRESS
           value: 0.0.0.0:30110
         - name: CORE_PEER_EVENTS_ADDRESS
           value: 0.0.0.0:30111
         - name: CORE_PEER_GOSSIP_BOOTSTRAP
-          value: org1peer1:30110
+          value: 127.0.0.1:30110
         - name: CORE_PEER_GOSSIP_ENDPOINT
-          value: org1peer1:30110
+          value: 127.0.0.1:30110
         - name: CORE_PEER_GOSSIP_ORGLEADER
           value: "false"
         - name: CORE_PEER_GOSSIP_USELEADERELECTION
@@ -264,7 +333,7 @@ spec:
           value: "true"
         volumeMounts:
         - mountPath: /fabric
-          name: myvolume
+          name: fabricfiles
         ports:
         - containerPort: 30110
         - containerPort: 30111
@@ -285,8 +354,8 @@ spec:
           - name: dind-storage
             mountPath: /var/lib/docker
       volumes:
-      - name: myvolume
+      - name: fabricfiles
         persistentVolumeClaim:
-          claimName: tls-ca-pvc
+          claimName: fabric
       - name: dind-storage
         emptyDir: {}

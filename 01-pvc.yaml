@@ -2,9 +2,9 @@
 kind: PersistentVolume
 apiVersion: v1
 metadata:
-  name: tls-ca-pv
+  name: fabric
   labels:
-    app: tls-ca
+    app: fabric
 spec:
   storageClassName: standard
   capacity:
@@ -12,15 +12,15 @@ spec:
   accessModes:
     - ReadWriteMany
   hostPath:
-    path: "/mnt/hyperledger/tls-ca"
+    path: "/mnt/hyperledger/fabric"
 ---
 kind: PersistentVolumeClaim
 apiVersion: v1
 metadata:
   namespace: hyperledger
-  name: tls-ca-pvc
+  name: fabric
   labels:
-    app: tls-ca
+    app: fabric
 spec:
   storageClassName: standard
   accessModes:

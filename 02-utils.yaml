@@ -6,11 +6,6 @@ metadata:
   namespace: hyperledger
 data:
   configtx.yaml: |
-    # Copyright IBM Corp. All Rights Reserved.
-    #
-    # SPDX-License-Identifier: Apache-2.0
-    #
-
     ---
     ################################################################################
     #
@@ -396,11 +391,6 @@ data:
                     <<: *ApplicationCapabilities
 
   crypto-config.yaml: |
-    # Copyright IBM Corp. All Rights Reserved.
-    #
-    # SPDX-License-Identifier: Apache-2.0
-    #
-
     # ---------------------------------------------------------------------------
     # "OrdererOrgs" - Definition of organizations managing orderer nodes
     # ---------------------------------------------------------------------------
@@ -516,7 +506,7 @@ spec:
       volumes:
       - name: fabric
         persistentVolumeClaim:
-          claimName: tls-ca-pvc
+          claimName: fabric
       - name: config
         configMap:
           name: fabric-config
