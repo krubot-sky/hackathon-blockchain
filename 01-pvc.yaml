@@ -17,7 +17,7 @@ spec:
 kind: PersistentVolumeClaim
 apiVersion: v1
 metadata:
-  namespace: hyperledger
+  namespace: ledger
   name: fabric
   labels:
     app: fabric
