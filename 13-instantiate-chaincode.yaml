@@ -1,0 +1,44 @@
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: chaincode-instantiate
+  namespace: ledger
+spec:
+  backoffLimit: 1
+  template:
+    metadata:
+      name: chaincode-instantiate
+    spec:
+      restartPolicy: "Never"
+      containers:
+      - name: chaincodeinstantiate
+        image: hyperledger/fabric-tools:1.4.3
+        imagePullPolicy: Always
+        command: ["sh", "-c", "peer chaincode instantiate -o orderer:31010 -C ${CHANNEL_NAME} -n ${CHAINCODE_NAME} -v ${CHAINCODE_VERSION} -c '{\"Args\":[\"init\",\"a\",\"100\",\"b\",\"200\"]}'"]
+        env:
+        - name: CHANNEL_NAME
+          value: channel1
+        - name: CHAINCODE_NAME
+          value: "cc"
+        - name: CHAINCODE_VERSION
+          value: "1.0"
+        - name: FABRIC_CFG_PATH
+          value: /etc/hyperledger/fabric
+        - name: CORE_PEER_MSPCONFIGPATH
+          value: /fabric/crypto-config/peerOrganizations/org1.example.com/users/Admin@org1.example.com/msp
+        - name: CORE_PEER_LOCALMSPID
+          value: Org1MSP
+        - name: CORE_PEER_ADDRESS
+          value: org1peer1:30110
+        - name: GODEBUG
+          value: "netdns=go"
+        volumeMounts:
+        - mountPath: /fabric
+          name: fabricfiles
+
+      volumes:
+      - name: fabricfiles
+        nfs:
+          server: nfs-server.ledger.svc.cluster.local
+          path: "/"

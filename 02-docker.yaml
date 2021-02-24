@@ -1,0 +1,52 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: docker
+  namespace: ledger
+  labels:
+    run: docker
+spec:
+  selector:
+    name: docker
+  ports:
+  - protocol: TCP
+    targetPort: 2375
+    port: 2375
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: docker-dind
+  namespace: ledger
+spec:
+  replicas: 1
+  serviceName: "docker-dind"
+  selector:
+    matchLabels:
+      name: docker
+  template:
+    metadata:
+      labels:
+        name: docker
+    spec:
+      containers:
+      - name: docker
+        securityContext:
+          privileged: true
+        image: "docker:18.05.0-dind"
+        ports:
+        - containerPort: 2375
+        volumeMounts:
+        - mountPath: /var/lib/docker
+          name: docker
+  volumeClaimTemplates:
+  - metadata:
+      name: docker
+    spec:
+      accessModes:
+        - ReadWriteOnce
+      storageClassName: standard
+      resources:
+        requests:
+          storage: 5Gi

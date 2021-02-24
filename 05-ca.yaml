@@ -1,0 +1,70 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ca
+  namespace: ledger
+spec:
+  type: ClusterIP
+  selector:
+    app: ca
+  ports:
+  - protocol: TCP
+    port: 7054
+    targetPort: 7054
+    name: http
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ca
+  namespace: ledger
+  labels:
+    app: ca
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ca
+  template:
+    metadata:
+      labels:
+        app: ca
+    spec:
+      containers:
+      - name: caorg1
+        image: hyperledger/fabric-ca:latest
+        command: ["sh", "-c", "sleep 1 && while [ ! -f /fabric/status_configtxgen_complete ]; do echo Waiting for configtxgen; sleep 1; done; fabric-ca-server start -b admin:adminpw -d"]
+        ports:
+        - containerPort: 7054
+        env:
+        - name: TZ
+          value: "Europe/London"
+        - name: FABRIC_CA_SERVER_CA_NAME
+          value: "CA1"
+        - name: FABRIC_CA_SERVER_CA_CERTFILE
+          value: /fabric/crypto-config/peerOrganizations/org1.example.com/ca/ca.org1.example.com-cert.pem
+        - name: FABRIC_CA_SERVER_CA_KEYFILE
+          value: /fabric/crypto-config/peerOrganizations/org1.example.com/ca/key.pem
+        - name: FABRIC_CA_SERVER_DEBUG
+          value: "true"
+        - name: FABRIC_CA_SERVER_TLS_ENABLED
+          value: "false"
+        - name: FABRIC_CA_SERVER_TLS_CERTFILE
+          value: /certs/ca0a-cert.pem
+        - name: FABRIC_CA_SERVER_TLS_KEYFILE
+          value: /certs/ca0a-key.pem
+        - name: GODEBUG
+          value: "netdns=go"
+        resources:
+          limits:
+            memory: "128Mi"
+            cpu: "100m"
+        volumeMounts:
+        - mountPath: /fabric
+          name: fabricfiles
+      volumes:
+      - name: fabricfiles
+        nfs:
+          server: nfs-server.ledger.svc.cluster.local
+          path: "/"

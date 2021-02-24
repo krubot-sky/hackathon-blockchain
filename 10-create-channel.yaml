@@ -1,0 +1,58 @@
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: create-channel
+  namespace: ledger
+spec:
+  backoffLimit: 1
+  template:
+    metadata:
+      name: create-channel
+    spec:
+      restartPolicy: "Never"
+      containers:
+      - name: createchanneltx
+        image: hyperledger/fabric-tools:1.4
+        imagePullPolicy: Always
+        command: ["sh", "-c", "cd /fabric && pwd && ls && export FABRIC_CFG_PATH=$PWD && configtxgen -profile FourOrgsChannel -outputCreateChannelTx ${CHANNEL_NAME}.tx -channelID ${CHANNEL_NAME} && touch /fabric/status_channeltx_complete "]
+        env:
+        - name: CHANNEL_NAME
+          value: channel1
+        - name: GODEBUG
+          value: "netdns=go"
+        volumeMounts:
+        - mountPath: /fabric
+          name: fabricfiles
+
+      - name: createchannel
+        image: hyperledger/fabric-peer:1.4.3
+        imagePullPolicy: Always
+        command: ["sh", "-c", "while [ ! -f /fabric/status_channeltx_complete ]; do echo Waiting for channeltx; sleep 2; done; peer channel create -o ${ORDERER_URL} -c ${CHANNEL_NAME} -f /fabric/${CHANNEL_NAME}.tx && rm /fabric/status_channeltx_complete && touch /fabric/status_channelcreate_complete"]
+        env:
+        - name: CHANNEL_NAME
+          value: channel1
+        - name: ORDERER_URL
+          value: orderer:31010
+        - name: CORE_PEER_ADDRESSAUTODETECT
+          value: "false"
+        - name: CORE_PEER_NETWORKID
+          value: nid1
+        - name: CORE_PEER_LOCALMSPID
+          value: Org1MSP
+        - name: CORE_PEER_MSPCONFIGPATH
+          value: /fabric/crypto-config/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/msp/
+        - name: FABRIC_LOGGING_SPEC
+          value: debug
+        - name: FABRIC_CFG_PATH
+          value: /etc/hyperledger/fabric
+        - name: GODEBUG
+          value: "netdns=go"
+        volumeMounts:
+        - mountPath: /fabric
+          name: fabricfiles
+      volumes:
+      - name: fabricfiles
+        nfs:
+          server: nfs-server.ledger.svc.cluster.local
+          path: "/"

@@ -34,7 +34,7 @@ spec:
       containers:
       - name: orderer
         image: hyperledger/fabric-orderer:1.4.3
-        command: ["sh", "-c", "orderer"]
+        command: ["sh", "-c", "sleep 5 && while [ ! -f /fabric/status_configtxgen_complete ]; do echo Waiting for configtxgen; sleep 1; done; orderer"]
         ports:
         - containerPort: 31010
         env:
@@ -79,5 +79,6 @@ spec:
           name: fabricfiles
       volumes:
       - name: fabricfiles
-        persistentVolumeClaim:
-          claimName: fabric
+        nfs:
+          server: nfs-server.ledger.svc.cluster.local
+          path: "/"
