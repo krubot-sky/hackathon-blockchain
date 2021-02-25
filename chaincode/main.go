@@ -11,6 +11,7 @@ import (
 	"fmt"
 
   "github.com/hyperledger/fabric-contract-api-go/contractapi"
+  log "github.com/sirupsen/logrus"
 )
 
 // SmartContract provides functions for managing a books
@@ -43,6 +44,7 @@ func (s *SmartContract) InitLedger(ctx contractapi.TransactionContextInterface) 
 		err := ctx.GetStub().PutState(book.ISBN, bookAsBytes)
 
 		if err != nil {
+			log.Error("Failed to put to world state. %s", err.Error())
 			return fmt.Errorf("Failed to put to world state. %s", err.Error())
 		}
 	}
@@ -55,10 +57,12 @@ func (s *SmartContract) QueryBook(ctx contractapi.TransactionContextInterface, b
 	bookAsBytes, err := ctx.GetStub().GetState(bookISBN)
 
 	if err != nil {
+		log.Error("Failed to read from world state. %s", err.Error())
 		return nil, fmt.Errorf("Failed to read from world state. %s", err.Error())
 	}
 
 	if bookAsBytes == nil {
+		log.Error("ISBN %s does not exist", bookISBN)
 		return nil, fmt.Errorf("ISBN %s does not exist", bookISBN)
 	}
 
@@ -68,16 +72,18 @@ func (s *SmartContract) QueryBook(ctx contractapi.TransactionContextInterface, b
 	return book, nil
 }
 
-// QueryBook returns the book stored in the world state with given isbn
+// QueryBook returns the book stored in the world state with given title
 func (s *SmartContract) QueryBookByTitle(ctx contractapi.TransactionContextInterface, title string) (*Book, error) {
 	bookAsBytes, err := ctx.GetStub().GetState(title)
 
 	if err != nil {
+		log.Error("Failed to read from world state. %s", err.Error())
 		return nil, fmt.Errorf("Failed to read from world state. %s", err.Error())
 	}
 
 	if bookAsBytes == nil {
-		return nil, fmt.Errorf("ISBN %s does not exist", bookISBN)
+		log.Error("ISBN %s does not exist", title)
+		return nil, fmt.Errorf("ISBN %s does not exist", title)
 	}
 
 	book := new(Book)
@@ -91,7 +97,8 @@ func (s *SmartContract) ChangeBookOwner(ctx contractapi.TransactionContextInterf
 	book, err := s.QueryBook(ctx, bookISBN)
 
 	if err != nil {
-		return err
+		log.Error("No book found with the following ISBN: %s", bookISBN)
+		return nil, fmt.Errorf("No book found: %s", err.Error())
 	}
 
 	book.Owner = newOwner
@@ -107,15 +114,16 @@ func (s *SmartContract) DeleteBook(ctx contractapi.TransactionContextInterface, 
 	del, err := ctx.GetStub().DelState(bookISBN)
 
 	if err != nil {
-		return err
+		log.Error("No book found", err.Error())
+		return nil, fmt.Errorf("No book found", err.Error())
 	}
 
 	//if del != nil {
 	//	return err
 	//}
-	fmt.Printf("Del: %s", del)
+	log.Info("Del: %s", del)
 	
-	return del
+	return del, nil
 }
 
 
@@ -124,10 +132,12 @@ func (s *SmartContract) AddBook(ctx contractapi.TransactionContextInterface, boo
 	bookAsBytes, err := ctx.GetStub().GetState(bookISBN)
 
 	if err != nil {
+		log.Error()
 		return nil, fmt.Errorf("Failed to read from world state. %s", err.Error())
 	}
 
 	if bookAsBytes != nil {
+		log.Error()
 		return nil, fmt.Errorf("Book %s already exist", bookISBN)
 	}
 
@@ -141,13 +151,15 @@ func (s *SmartContract) AddBook(ctx contractapi.TransactionContextInterface, boo
 
 	bookAsBytes, err := json.Marshal(book)
 	if err != nil {
-		return fmt.Errorf("Failed to marshal book. %s", err.Error())
+		log.Error("Failed to marshal book. %s", err.Error())
+		return nil, fmt.Errorf("Failed to marshal book. %s", err.Error())
 	}
 
 	err := ctx.GetStub().PutState(book.ISBN, bookAsBytes)
 
 	if err != nil {
-		return fmt.Errorf("Failed to put to world state. %s", err.Error())
+		log.Error("Failed to put to world state. %s", err.Error())
+		return nil, fmt.Errorf("Failed to put to world state. %s", err.Error())
 	}
 
 	return book, nil
@@ -158,11 +170,13 @@ func main() {
 	chaincode, err := contractapi.NewChaincode(new(SmartContract))
 
 	if err != nil {
+		log.Error("Error create book store chaincode: %s", err.Error())
 		fmt.Printf("Error create book store chaincode: %s", err.Error())
 		return
 	}
 
 	if err := chaincode.Start(); err != nil {
+		log.Error("Error starting book store chaincode: %s", err.Error())
 		fmt.Printf("Error starting book store chaincode: %s", err.Error())
 	}
 }
