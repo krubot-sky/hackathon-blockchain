@@ -344,6 +344,7 @@ spec:
         - name: config
           mountPath: "/config"
           readOnly: true
+      serviceAccountName: fabric
       volumes:
       - name: fabric
         nfs:

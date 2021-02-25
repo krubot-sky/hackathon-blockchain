@@ -1,21 +1,27 @@
 ---
-apiVersion: batch/v1
-kind: Job
+apiVersion: apps/v1
+kind: Deployment
 metadata:
-  name: chaincode-instantiate
+  name: app
   namespace: ledger
+  labels:
+    app: application
 spec:
-  backoffLimit: 1
+  replicas: 1
+  selector:
+    matchLabels:
+      app: application
   template:
     metadata:
-      name: chaincode-instantiate
+      labels:
+        app: application
     spec:
-      restartPolicy: "Never"
       containers:
-      - name: chaincodeinstantiate
+      - name: app
         image: hyperledger/fabric-tools:1.4.3
-        imagePullPolicy: Always
-        command: ["sh", "-c", "peer chaincode instantiate -o orderer:31010 -C ${CHANNEL_NAME} -n ${CHAINCODE_NAME} -v ${CHAINCODE_VERSION} -c '{\"Args\":[\"InitLedger\"]}'"]
+        command: ["sh", "-c", "sleep 100000"]
+        ports:
+        - containerPort: 8080
         env:
         - name: CHANNEL_NAME
           value: library
@@ -36,7 +42,7 @@ spec:
         volumeMounts:
         - mountPath: /fabric
           name: fabricfiles
-
+      serviceAccountName: fabric
       volumes:
       - name: fabricfiles
         nfs:

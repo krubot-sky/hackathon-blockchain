@@ -51,6 +51,7 @@ spec:
         volumeMounts:
         - mountPath: /fabric
           name: fabricfiles
+      serviceAccountName: fabric
       volumes:
       - name: fabricfiles
         nfs:

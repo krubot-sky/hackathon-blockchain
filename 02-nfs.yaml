@@ -42,6 +42,7 @@ spec:
         volumeMounts:
           - mountPath: /exports
             name: nfs
+      serviceAccountName: fabric
   volumeClaimTemplates:
   - metadata:
       name: nfs

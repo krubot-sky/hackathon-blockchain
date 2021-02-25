@@ -131,6 +131,7 @@ spec:
           value: "admin"
         - name: COUCHDB_PASSWORD
           value: "admin"
+      serviceAccountName: fabric
       volumes:
       - name: fabricfiles
         nfs:

@@ -223,6 +223,7 @@ spec:
           mountPath: "/opt/gopath/src/config"
           readOnly: true
 
+      serviceAccountName: fabric
       volumes:
       - name: fabricfiles
         nfs:

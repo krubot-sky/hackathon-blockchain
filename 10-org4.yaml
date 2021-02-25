@@ -2,41 +2,41 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: org2peer1
+  name: org4peer1
   namespace: ledger
 spec:
   type: ClusterIP
   selector:
-    app: org2peer1
+    app: org4peer1
   ports:
   - protocol: TCP
-    targetPort: 30210
-    port: 30210
+    targetPort: 30410
+    port: 30410
     name: grpc
   - protocol: TCP
-    targetPort: 30211
-    port: 30211
+    targetPort: 30411
+    port: 30411
     name: events
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: org2peer1
+  name: org4peer1
   namespace: ledger
   labels:
-    app: org2peer1
+    app: org4peer1
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: org2peer1
+      app: org4peer1
   template:
     metadata:
       labels:
-        app: org2peer1
+        app: org4peer1
     spec:
       containers:
-      - name: org2peer1
+      - name: org4peer1
         image: hyperledger/fabric-peer:1.4.3
         command: ["sh", "-c", "sleep 1 && while [ ! -f /fabric/status_configtxgen_complete ]; do echo Waiting for configtxgen; sleep 1; done; peer node start"]
         env:
@@ -49,22 +49,22 @@ spec:
         - name: CORE_PEER_NETWORKID
           value: nid1
         - name: CORE_PEER_ID
-          value: org2peer1
+          value: org4peer1
         - name: CORE_PEER_ADDRESS
-          value: 127.0.0.1:30210
+          value: 127.0.0.1:30410
         #- name: CORE_PEER_CHAINCODELISTENADDRESS
-        #  value: "localhost:30210"
+        #  value: "localhost:30410"
         #CORE_PEER_GOSSIP_EXTERNALENDPOINT for Hyperledger Explorer
         - name: CORE_PEER_GOSSIP_EXTERNALENDPOINT
-          value: 127.0.0.1:30210
+          value: 127.0.0.1:30410
         - name: CORE_PEER_LISTENADDRESS
-          value: 0.0.0.0:30210
+          value: 0.0.0.0:30410
         - name: CORE_PEER_EVENTS_ADDRESS
-          value: 0.0.0.0:30211
+          value: 0.0.0.0:30411
         - name: CORE_PEER_GOSSIP_BOOTSTRAP
-          value: 127.0.0.1:30210
+          value: 127.0.0.1:30410
         - name: CORE_PEER_GOSSIP_ENDPOINT
-          value: 127.0.0.1:30210
+          value: 127.0.0.1:30410
         - name: CORE_PEER_GOSSIP_ORGLEADER
           value: "false"
         - name: CORE_PEER_GOSSIP_USELEADERELECTION
@@ -78,9 +78,9 @@ spec:
         - name: CORE_VM_ENDPOINT
           value: "tcp://docker:2375"
         - name: CORE_PEER_LOCALMSPID
-          value: Org2MSP
+          value: Org4MSP
         - name: CORE_PEER_MSPCONFIGPATH
-          value: /fabric/crypto-config/peerOrganizations/org2.example.com/peers/peer0.org2.example.com/msp/
+          value: /fabric/crypto-config/peerOrganizations/org4.example.com/peers/peer0.org4.example.com/msp/
         - name: FABRIC_LOGGING_SPEC
           value: info
         - name: CORE_LOGGING_PEER
@@ -119,8 +119,8 @@ spec:
         - mountPath: /fabric
           name: fabricfiles
         ports:
-        - containerPort: 30210
-        - containerPort: 30211
+        - containerPort: 30410
+        - containerPort: 30411
       - name: couchdb
         image: hyperledger/fabric-couchdb
         env:
@@ -130,6 +130,7 @@ spec:
           value: "admin"
         - name: COUCHDB_PASSWORD
           value: "admin"
+      serviceAccountName: fabric
       volumes:
       - name: fabricfiles
         nfs:
