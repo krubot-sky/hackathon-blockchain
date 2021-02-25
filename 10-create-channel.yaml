@@ -13,7 +13,7 @@ spec:
       restartPolicy: "Never"
       containers:
       - name: createchanneltx
-        image: hyperledger/fabric-tools:1.4
+        image: hyperledger/fabric-tools:1.4.3
         imagePullPolicy: Always
         command: ["sh", "-c", "cd /fabric && pwd && ls && export FABRIC_CFG_PATH=$PWD && configtxgen -profile FourOrgsChannel -outputCreateChannelTx ${CHANNEL_NAME}.tx -channelID ${CHANNEL_NAME} && touch /fabric/status_channeltx_complete "]
         env:
