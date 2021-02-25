@@ -97,11 +97,12 @@
       </form>
 
       <button type="submit" class="registerbtn">Search</button>
+      
+      {{if .Success}}
+      <div>{{.Result}}</div>
+      {{end}}
     </center>
   </div>
 </form>
-{{if .Success}}
-<div>{{.Result}}</div>
-{{end}}
 </body>
 </html>
