@@ -4,6 +4,9 @@ package main
 import (
     "html/template"
     "net/http"
+    "os/exec"
+    "fmt"
+    "bufio"
 )
 
 type PageVariables struct {
@@ -22,12 +25,25 @@ func main() {
 
         search := r.FormValue("text")
 
-        HomePageVars := PageVariables{
-          Success: true,
-          Result: search,
+        cmd := exec.Command("/usr/local/bin/peer","chaincode","invoke","-o","orderer:31010","-C","library","-n","bookstore","-c",`{"Args":["QueryBook","` + search + `"]}`)
+
+        stderr, _ := cmd.StderrPipe()
+        if err := cmd.Start(); err != nil {
+            tmpl.Execute(w, nil)
+            return
         }
 
-        tmpl.Execute(w, HomePageVars)
+        scanner := bufio.NewScanner(stderr)
+        for scanner.Scan() {
+            fmt.Println(scanner.Text())
+
+            HomePageVars := PageVariables{
+              Success: true,
+              Result: scanner.Text(),
+            }
+
+            tmpl.Execute(w, HomePageVars)
+        }
     })
 
     http.ListenAndServe(":8080", nil)

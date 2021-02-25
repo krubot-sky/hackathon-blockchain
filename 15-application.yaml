@@ -1,4 +1,19 @@
 ---
+apiVersion: v1
+kind: Service
+metadata:
+  name: application
+  namespace: ledger
+spec:
+  type: ClusterIP
+  selector:
+    app: application
+  ports:
+  - protocol: TCP
+    targetPort: 8080
+    port: 8080
+    name: app
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -18,8 +33,8 @@ spec:
     spec:
       containers:
       - name: app
-        image: hyperledger/fabric-tools:1.4.3
-        command: ["sh", "-c", "sleep 100000"]
+        image: us.gcr.io/nbcu-disco-mgmt-003/hackathon/app:latest
+        command: ["./main"]
         ports:
         - containerPort: 8080
         env:
