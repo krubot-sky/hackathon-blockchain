@@ -1,7 +1,9 @@
-FROM node:12.18.1
+FROM hyperledger/fabric-tools:1.4.3
 
-WORKDIR /app
+WORKDIR /srv
 
 COPY . .
 
-CMD [ "node", "app.js" ]
+RUN go build main.go
+
+CMD ["./main"]
