@@ -126,7 +126,7 @@ func (s *SmartContract) DeleteBook(ctx contractapi.TransactionContextInterface, 
 
 
 // QueryBook returns the book stored in the world state with given isbn
-func (s *SmartContract) AddBook(ctx contractapi.TransactionContextInterface, bookISBN string, description string, title string,  author string, owner string ) (Book, error) {
+func (s *SmartContract) AddBook(ctx contractapi.TransactionContextInterface, bookISBN string, description string, title string,  author string, owner string ) (*Book, error) {
 	bookAsBytes, err := ctx.GetStub().GetState(bookISBN)
 
 	if err != nil {
@@ -166,7 +166,7 @@ func (s *SmartContract) AddBook(ctx contractapi.TransactionContextInterface, boo
 		return nil, fmt.Errorf("Failed to put to world state. %s", err_.Error())
 	}
 
-	return book, nil
+	return &book, nil
 }
 
 func main() {
