@@ -139,7 +139,7 @@ func (s *SmartContract) AddBook(ctx contractapi.TransactionContextInterface, boo
 		return nil, fmt.Errorf("Book %s already exist", bookISBN)
 	}
 
-	book = Book{
+	book := Book{
 		Title: title, 
 		Author: author, 
 		Description: description, 
