@@ -68,6 +68,24 @@ func (s *SmartContract) QueryBook(ctx contractapi.TransactionContextInterface, b
 	return book, nil
 }
 
+// QueryBook returns the book stored in the world state with given isbn
+func (s *SmartContract) QueryBookByTitle(ctx contractapi.TransactionContextInterface, title string) (*Book, error) {
+	bookAsBytes, err := ctx.GetStub().GetState(title)
+
+	if err != nil {
+		return nil, fmt.Errorf("Failed to read from world state. %s", err.Error())
+	}
+
+	if bookAsBytes == nil {
+		return nil, fmt.Errorf("ISBN %s does not exist", bookISBN)
+	}
+
+	book := new(Book)
+	_ = json.Unmarshal(bookAsBytes, book)
+
+	return book, nil
+}
+
 // ChangeBookOwner updates the owner field of book with given id in world state
 func (s *SmartContract) ChangeBookOwner(ctx contractapi.TransactionContextInterface, bookISBN string, newOwner string) error {
 	book, err := s.QueryBook(ctx, bookISBN)
@@ -114,12 +132,12 @@ func (s *SmartContract) AddBook(ctx contractapi.TransactionContextInterface, boo
 	}
 
 	book := Book{
-    	Title: title, 
-    	Author: author, 
-    	Description: description, 
-    	ISBN: bookISBN, 
-    	Owner: owner
-    }
+		Title: title, 
+		Author: author, 
+		Description: description, 
+		ISBN: bookISBN, 
+		Owner: owner
+   }
 
 	bookAsBytes, err := json.Marshal(book)
 	if err != nil {
