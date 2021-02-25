@@ -18,7 +18,7 @@ spec:
         command: ["sh", "-c", "cd /fabric && pwd && ls && export FABRIC_CFG_PATH=$PWD && configtxgen -profile FourOrgsChannel -outputCreateChannelTx ${CHANNEL_NAME}.tx -channelID ${CHANNEL_NAME} && touch /fabric/status_channeltx_complete "]
         env:
         - name: CHANNEL_NAME
-          value: channel1
+          value: library
         - name: GODEBUG
           value: "netdns=go"
         volumeMounts:
@@ -31,7 +31,7 @@ spec:
         command: ["sh", "-c", "while [ ! -f /fabric/status_channeltx_complete ]; do echo Waiting for channeltx; sleep 2; done; peer channel create -o ${ORDERER_URL} -c ${CHANNEL_NAME} -f /fabric/${CHANNEL_NAME}.tx && rm /fabric/status_channeltx_complete && touch /fabric/status_channelcreate_complete"]
         env:
         - name: CHANNEL_NAME
-          value: channel1
+          value: library
         - name: ORDERER_URL
           value: orderer:31010
         - name: CORE_PEER_ADDRESSAUTODETECT

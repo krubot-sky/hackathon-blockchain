@@ -18,7 +18,7 @@ spec:
         command: ["sh", "-c", "peer channel fetch newest -o ${ORDERER_URL} -c ${CHANNEL_NAME} && peer channel join -b ${CHANNEL_NAME}_newest.block "]
         env:
         - name: CHANNEL_NAME
-          value: channel1
+          value: library
         - name: CORE_PEER_NETWORKID
           value: nid1
         - name: ORDERER_URL
@@ -47,7 +47,7 @@ spec:
         command: ["sh", "-c", "peer channel fetch newest -o ${ORDERER_URL} -c ${CHANNEL_NAME} && peer channel join -b ${CHANNEL_NAME}_newest.block "]
         env:
         - name: CHANNEL_NAME
-          value: channel1
+          value: library
         - name: CORE_PEER_NETWORKID
           value: nid1
         - name: ORDERER_URL
@@ -76,7 +76,7 @@ spec:
         command: ["sh", "-c", "peer channel fetch newest -o ${ORDERER_URL} -c ${CHANNEL_NAME} && peer channel join -b ${CHANNEL_NAME}_newest.block "]
         env:
         - name: CHANNEL_NAME
-          value: channel1
+          value: library
         - name: CORE_PEER_NETWORKID
           value: nid1
         - name: ORDERER_URL
@@ -105,7 +105,7 @@ spec:
         command: ["sh", "-c", "peer channel fetch newest -o ${ORDERER_URL} -c ${CHANNEL_NAME} && peer channel join -b ${CHANNEL_NAME}_newest.block "]
         env:
         - name: CHANNEL_NAME
-          value: channel1
+          value: library
         - name: CORE_PEER_NETWORKID
           value: nid1
         - name: ORDERER_URL
