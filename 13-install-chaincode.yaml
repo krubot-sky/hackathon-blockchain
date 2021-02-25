@@ -19,6 +19,7 @@ data:
       "fmt"
 
       "github.com/hyperledger/fabric-contract-api-go/contractapi"
+      log "github.com/sirupsen/logrus"
     )
 
     // SmartContract provides functions for managing a books
@@ -49,9 +50,16 @@ data:
       for _, book := range books {
         bookAsBytes, _ := json.Marshal(book)
         err := ctx.GetStub().PutState(book.ISBN, bookAsBytes)
+        err_ := ctx.GetStub().PutState(book.Title, bookAsBytes)
 
         if err != nil {
+          log.Error("Failed to put to world state. %s", err.Error())
           return fmt.Errorf("Failed to put to world state. %s", err.Error())
+        }
+
+        if err_ != nil {
+          log.Error("Failed to put to world state. %s", err_.Error())
+          return fmt.Errorf("Failed to put to world state. %s", err_.Error())
         }
       }
 
@@ -63,10 +71,12 @@ data:
       bookAsBytes, err := ctx.GetStub().GetState(bookISBN)
 
       if err != nil {
+        log.Error("Failed to read from world state. %s", err.Error())
         return nil, fmt.Errorf("Failed to read from world state. %s", err.Error())
       }
 
       if bookAsBytes == nil {
+        log.Error("ISBN %s does not exist", bookISBN)
         return nil, fmt.Errorf("ISBN %s does not exist", bookISBN)
       }
 
@@ -76,16 +86,18 @@ data:
       return book, nil
     }
 
-    // QueryBook returns the book stored in the world state with given isbn
+    // QueryBook returns the book stored in the world state with given title
     func (s *SmartContract) QueryBookByTitle(ctx contractapi.TransactionContextInterface, title string) (*Book, error) {
       bookAsBytes, err := ctx.GetStub().GetState(title)
 
       if err != nil {
+        log.Error("Failed to read from world state. %s", err.Error())
         return nil, fmt.Errorf("Failed to read from world state. %s", err.Error())
       }
 
       if bookAsBytes == nil {
-        return nil, fmt.Errorf("ISBN %s does not exist", bookISBN)
+        log.Error("ISBN %s does not exist", title)
+        return nil, fmt.Errorf("ISBN %s does not exist", title)
       }
 
       book := new(Book)
@@ -99,7 +111,8 @@ data:
       book, err := s.QueryBook(ctx, bookISBN)
 
       if err != nil {
-        return err
+        log.Error("No book found with the following ISBN: %s", bookISBN)
+        return fmt.Errorf("No book found: %s", err.Error())
       }
 
       book.Owner = newOwner
@@ -110,52 +123,55 @@ data:
     }
 
     // QueryBook returns the book stored in the world state with given isbn
-    func (s *SmartContract) DeleteBook(ctx contractapi.TransactionContextInterface, bookISBN string) (*Book, error) {
+    func (s *SmartContract) DeleteBook(ctx contractapi.TransactionContextInterface, bookISBN string) error {
       
-      del, err := ctx.GetStub().DelState(bookISBN)
+      del := ctx.GetStub().DelState(bookISBN)
 
-      if err != nil {
-        return err
-      }
-
-      //if del != nil {
-      //  return err
-      //}
-      fmt.Printf("Del: %s", del)
+      log.Info("Del: %s", del)
       
       return del
     }
 
 
     // QueryBook returns the book stored in the world state with given isbn
-    func (s *SmartContract) AddBook(ctx contractapi.TransactionContextInterface, bookISBN string, description string, title string,  author string, owner string ) (*Book, error) {
+    func (s *SmartContract) AddBook(ctx contractapi.TransactionContextInterface, bookISBN string, description string, title string,  author string, owner string ) (Book, error) {
       bookAsBytes, err := ctx.GetStub().GetState(bookISBN)
 
       if err != nil {
+        log.Error("Failed to read from world state. %s", err.Error())
         return nil, fmt.Errorf("Failed to read from world state. %s", err.Error())
       }
 
       if bookAsBytes != nil {
+        log.Error("Book %s already exist", bookISBN)
         return nil, fmt.Errorf("Book %s already exist", bookISBN)
       }
 
-      book := Book{
+      book = Book{
         Title: title, 
         Author: author, 
         Description: description, 
         ISBN: bookISBN, 
-        Owner: owner
+        Owner: owner,
        }
 
-      bookAsBytes, err := json.Marshal(book)
+      bookAsBytes, err = json.Marshal(book)
       if err != nil {
-        return fmt.Errorf("Failed to marshal book. %s", err.Error())
+        log.Error("Failed to marshal book. %s", err.Error())
+        return nil, fmt.Errorf("Failed to marshal book. %s", err.Error())
       }
 
-      err := ctx.GetStub().PutState(book.ISBN, bookAsBytes)
+      err = ctx.GetStub().PutState(book.ISBN, bookAsBytes)
+      err_ := ctx.GetStub().PutState(book.Title, bookAsBytes)
 
       if err != nil {
-        return fmt.Errorf("Failed to put to world state. %s", err.Error())
+        log.Error("Failed to put to world state. %s", err.Error())
+        return nil, fmt.Errorf("Failed to put to world state. %s", err.Error())
+      }
+
+      if err_  != nil {
+        log.Error("Failed to put to world state. %s", err_.Error())
+        return nil, fmt.Errorf("Failed to put to world state. %s", err_.Error())
       }
 
       return book, nil
@@ -193,7 +209,7 @@ spec:
       - name: chaincodeinstall1
         image: hyperledger/fabric-tools:1.4.3
         imagePullPolicy: Always
-        command: ["sh", "-c", "go get github.com/hyperledger/fabric-contract-api-go/contractapi; peer chaincode install -n ${CHAINCODE_NAME} -v ${CHAINCODE_VERSION} -p config/"]
+        command: ["sh", "-c", "go get github.com/sirupsen/logrus; go get github.com/hyperledger/fabric-contract-api-go/contractapi; peer chaincode install -n ${CHAINCODE_NAME} -v ${CHAINCODE_VERSION} -p config/"]
         env:
         - name: CHAINCODE_NAME
           value: "bookstore"
@@ -219,7 +235,7 @@ spec:
       - name: chaincodeinstall2
         image: hyperledger/fabric-tools:1.4.3
         imagePullPolicy: Always
-        command: ["sh", "-c", "go get github.com/hyperledger/fabric-contract-api-go/contractapi; peer chaincode install -n ${CHAINCODE_NAME} -v ${CHAINCODE_VERSION} -p config/"]
+        command: ["sh", "-c", "go get github.com/sirupsen/logrus; go get github.com/hyperledger/fabric-contract-api-go/contractapi; peer chaincode install -n ${CHAINCODE_NAME} -v ${CHAINCODE_VERSION} -p config/"]
         env:
         - name: CHAINCODE_NAME
           value: "bookstore"
@@ -245,7 +261,7 @@ spec:
       - name: chaincodeinstall3
         image: hyperledger/fabric-tools:1.4.3
         imagePullPolicy: Always
-        command: ["sh", "-c", "go get github.com/hyperledger/fabric-contract-api-go/contractapi; peer chaincode install -n ${CHAINCODE_NAME} -v ${CHAINCODE_VERSION} -p config/"]
+        command: ["sh", "-c", "go get github.com/sirupsen/logrus; go get github.com/hyperledger/fabric-contract-api-go/contractapi; peer chaincode install -n ${CHAINCODE_NAME} -v ${CHAINCODE_VERSION} -p config/"]
         env:
         - name: CHAINCODE_NAME
           value: "bookstore"
@@ -271,7 +287,7 @@ spec:
       - name: chaincodeinstall4
         image: hyperledger/fabric-tools:1.4.3
         imagePullPolicy: Always
-        command: ["sh", "-c", "go get github.com/hyperledger/fabric-contract-api-go/contractapi; peer chaincode install -n ${CHAINCODE_NAME} -v ${CHAINCODE_VERSION} -p config/"]
+        command: ["sh", "-c", "go get github.com/sirupsen/logrus; go get github.com/hyperledger/fabric-contract-api-go/contractapi; peer chaincode install -n ${CHAINCODE_NAME} -v ${CHAINCODE_VERSION} -p config/"]
         env:
         - name: CHAINCODE_NAME
           value: "bookstore"

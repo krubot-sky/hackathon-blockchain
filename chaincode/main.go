@@ -42,10 +42,16 @@ func (s *SmartContract) InitLedger(ctx contractapi.TransactionContextInterface) 
 	for _, book := range books {
 		bookAsBytes, _ := json.Marshal(book)
 		err := ctx.GetStub().PutState(book.ISBN, bookAsBytes)
+		err_ := ctx.GetStub().PutState(book.Title, bookAsBytes)
 
 		if err != nil {
 			log.Error("Failed to put to world state. %s", err.Error())
 			return fmt.Errorf("Failed to put to world state. %s", err.Error())
+		}
+
+		if err_ != nil {
+			log.Error("Failed to put to world state. %s", err_.Error())
+			return fmt.Errorf("Failed to put to world state. %s", err_.Error())
 		}
 	}
 
@@ -98,7 +104,7 @@ func (s *SmartContract) ChangeBookOwner(ctx contractapi.TransactionContextInterf
 
 	if err != nil {
 		log.Error("No book found with the following ISBN: %s", bookISBN)
-		return nil, fmt.Errorf("No book found: %s", err.Error())
+		return fmt.Errorf("No book found: %s", err.Error())
 	}
 
 	book.Owner = newOwner
@@ -109,57 +115,55 @@ func (s *SmartContract) ChangeBookOwner(ctx contractapi.TransactionContextInterf
 }
 
 // QueryBook returns the book stored in the world state with given isbn
-func (s *SmartContract) DeleteBook(ctx contractapi.TransactionContextInterface, bookISBN string) (*Book, error) {
+func (s *SmartContract) DeleteBook(ctx contractapi.TransactionContextInterface, bookISBN string) error {
 	
-	del, err := ctx.GetStub().DelState(bookISBN)
+	del := ctx.GetStub().DelState(bookISBN)
 
-	if err != nil {
-		log.Error("No book found", err.Error())
-		return nil, fmt.Errorf("No book found", err.Error())
-	}
-
-	//if del != nil {
-	//	return err
-	//}
 	log.Info("Del: %s", del)
 	
-	return del, nil
+	return del
 }
 
 
 // QueryBook returns the book stored in the world state with given isbn
-func (s *SmartContract) AddBook(ctx contractapi.TransactionContextInterface, bookISBN string, description string, title string,  author string, owner string ) (*Book, error) {
+func (s *SmartContract) AddBook(ctx contractapi.TransactionContextInterface, bookISBN string, description string, title string,  author string, owner string ) (Book, error) {
 	bookAsBytes, err := ctx.GetStub().GetState(bookISBN)
 
 	if err != nil {
-		log.Error()
+		log.Error("Failed to read from world state. %s", err.Error())
 		return nil, fmt.Errorf("Failed to read from world state. %s", err.Error())
 	}
 
 	if bookAsBytes != nil {
-		log.Error()
+		log.Error("Book %s already exist", bookISBN)
 		return nil, fmt.Errorf("Book %s already exist", bookISBN)
 	}
 
-	book := Book{
+	book = Book{
 		Title: title, 
 		Author: author, 
 		Description: description, 
 		ISBN: bookISBN, 
-		Owner: owner
+		Owner: owner,
    }
 
-	bookAsBytes, err := json.Marshal(book)
+	bookAsBytes, err = json.Marshal(book)
 	if err != nil {
 		log.Error("Failed to marshal book. %s", err.Error())
 		return nil, fmt.Errorf("Failed to marshal book. %s", err.Error())
 	}
 
-	err := ctx.GetStub().PutState(book.ISBN, bookAsBytes)
+	err = ctx.GetStub().PutState(book.ISBN, bookAsBytes)
+	err_ := ctx.GetStub().PutState(book.Title, bookAsBytes)
 
 	if err != nil {
 		log.Error("Failed to put to world state. %s", err.Error())
 		return nil, fmt.Errorf("Failed to put to world state. %s", err.Error())
+	}
+
+	if err_  != nil {
+		log.Error("Failed to put to world state. %s", err_.Error())
+		return nil, fmt.Errorf("Failed to put to world state. %s", err_.Error())
 	}
 
 	return book, nil
@@ -170,13 +174,11 @@ func main() {
 	chaincode, err := contractapi.NewChaincode(new(SmartContract))
 
 	if err != nil {
-		log.Error("Error create book store chaincode: %s", err.Error())
 		fmt.Printf("Error create book store chaincode: %s", err.Error())
 		return
 	}
 
 	if err := chaincode.Start(); err != nil {
-		log.Error("Error starting book store chaincode: %s", err.Error())
 		fmt.Printf("Error starting book store chaincode: %s", err.Error())
 	}
 }
