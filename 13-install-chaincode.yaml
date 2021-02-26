@@ -156,7 +156,6 @@ data:
       if err := chaincode.Start(); err != nil {
         fmt.Printf("Error starting book store chaincode: %s", err.Error())
       }
-}
 
 ---
 apiVersion: batch/v1
