@@ -2,7 +2,6 @@
 package main
 
 import (
-    //"encoding/json"
     "html/template"
     "net/http"
     "os/exec"
@@ -12,7 +11,7 @@ import (
 )
 
 type PageVariables struct {
-    SuccessFalse bool
+  SuccessFalse bool
 	Success      bool
 	BookID       string
   BookName     string
@@ -47,9 +46,9 @@ func main() {
 
               HomePageVars := PageVariables{
                 Success: true,
-                BookID: strings.Split(payload,"\"")[16],
-                BookName: strings.Split(payload,"\"")[4],
-                BookAuthor: strings.Split(payload,"\"")[8],
+                BookID: strings.TrimSuffix(strings.Split(payload,"\"")[16], "\\"),
+                BookName: strings.TrimSuffix(strings.Split(payload,"\"")[4], "\\"),
+                BookAuthor: strings.TrimSuffix(strings.Split(payload,"\"")[8], "\\"),
               }
 
               tmpl.Execute(w, HomePageVars)
