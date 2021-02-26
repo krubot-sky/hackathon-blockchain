@@ -114,7 +114,7 @@ func (s *SmartContract) AddBook(ctx contractapi.TransactionContextInterface, boo
 	  return err
 	}
 	if exists {
-	  return fmt.Errorf("the asset %s already exists", id)
+	  return fmt.Errorf("the asset %s already exists", bookISBN)
 	}
 	book := Book{
 		Title: title, 
@@ -123,7 +123,7 @@ func (s *SmartContract) AddBook(ctx contractapi.TransactionContextInterface, boo
 		ISBN: bookISBN, 
 		Owner: owner,
    }
-	bookAsBytes, err = json.Marshal(book)
+	bookAsBytes, err := json.Marshal(book)
 	if err != nil {
 		log.Error("Failed to marshal book. %s", err.Error())
 		return fmt.Errorf("Failed to marshal book. %s", err.Error())
