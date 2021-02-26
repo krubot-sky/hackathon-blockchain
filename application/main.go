@@ -19,12 +19,6 @@ type PageVariables struct {
   BookAuthor   string
 }
 
-//type Book struct {
-//    BookID      string `json:"isbn"`
-//    BookName    string `json:"title"`
-//    BookAuthor  string `json:"author"`
-//}
-
 func main() {
     tmpl := template.Must(template.ParseFiles("index.html"))
 
@@ -50,14 +44,6 @@ func main() {
 
             if strings.Contains(scanner.Text(), "payload") {
               payload := strings.Split(scanner.Text(),"payload:")[1]
-
-              //book := Book {
-              //  BookID: strings.Split(payload,"\"")[15],
-              //  BookName: strings.Split(payload,"\"")[3],
-              //  BookAuthor: strings.Split(payload,"\"")[7],
-              //}
-
-              //out, _ := json.Marshal(book)
 
               HomePageVars := PageVariables{
                 Success: true,
