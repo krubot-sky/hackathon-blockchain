@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html xmlns="http://www.w3.org/1999/html">
 <head>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <style>
@@ -31,7 +31,7 @@
     }
 
     /* Full-width input fields */
-    input[type=text], input[type=password] {
+    input[type=text]{
       width: 50%;
       padding: 15px;
       margin: 5px 10px 22px 10px;
@@ -41,7 +41,7 @@
       align: center;
     }
 
-    input[type=text]:focus, input[type=password]:focus {
+    input[type=text]:focus{
       background-color: #ddd;
       outline: none;
       align: center;
@@ -54,7 +54,7 @@
     }
 
     /* Set a style for the submit button */
-    .registerbtn {
+    .submitbtn {
       background-color: #4CAF50;
       color: white;
       padding: 16px 20px;
@@ -66,19 +66,22 @@
       align: center;
     }
 
-    .registerbtn:hover {
+    .submitbtn:hover {
       opacity: 1;
     }
 
-    /* Add a blue text color to links */
-    a {
-      color: dodgerblue;
+    table, th, td {
+      border: 1px solid black;
+      border-collapse: collapse;
     }
 
-    /* Set a grey background color and center the text of the "sign in" section */
-    .signin {
-      background-color: #f1f1f1;
-      text-align: center;
+    th, td {
+      padding: 5px;
+    }
+
+    th {
+      text-align: left;
+      background-color: darkseagreen;
     }
   </style>
 </head>
@@ -91,17 +94,42 @@
     <center>
       <input type="text" placeholder="Search by Id or Name" name="text" required>
       <br>
-      <form >
-        <input type="radio" name="valueSearch" value="id"> Book Id &nbsp; &nbsp;
-        <input type="radio" name="valueSearch" value="name">Book Name <br>
+      <form>
+        <input type="radio" name="ByIdOrName" value="id" required> Book Id &nbsp; &nbsp;
+        <input type="radio" name="ByIdOrName" value="name">Book Name <br>
       </form>
 
-      <button type="submit" class="registerbtn">Search</button>
+      <button type="submit" class="submitbtn">Search</button>
     </center>
   </div>
+  <br>
+  {{if.Success}}
+  <div class="center">
+    <center>
+      <table style="width:100%">
+        <tbody>
+        <tr>
+          <th>Book ID</th>
+          <th>Book Name</th>
+          <th>Book Author</th>
+        </tr>
+        <tr>
+          <td>{{.BookID}}
+          </td>
+          <td>{{.BookName}}
+          </td>
+          <td>{{.BookAuthor}}
+          </td>
+        </tr>
+
+        </tbody>
+      </table>
+    </center>
+  </div>
+  {{end}}
+  {{if.SuccessFalse}}
+   <div class="center"><h3>Sorry The Book is not available </h3></div>
+  {{end}}
 </form>
-{{if .Success}}
-<h1>{{.Result}}</h1>
-{{end}}
 </body>
 </html>
