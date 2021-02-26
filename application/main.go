@@ -2,35 +2,27 @@
 package main
 
 import (
-    "encoding/json"
+    //"encoding/json"
     "html/template"
     "net/http"
     "os/exec"
     "fmt"
     "bufio"
     "strings"
-    "encoding/json"
 )
 
 type PageVariables struct {
 	Success      bool
-	Result       string
+	BookID       string
+  BookName     string
+  BookAuthor   string
 }
 
-type Book struct {
-    Title       string `json:"title"`
-    Author      string `json:"author"`
-    Description string `json:"description"`
-    ISBN        string `json:"isbn"`
-    Owner       string `json:"owner"`
-}
-
-func ConvertBookStringToJson(bookString string) *Book {
-    book := new(Book)
-    _ = json.Unmarshal(bookString, book)
-
-    return book
-}
+//type Book struct {
+//    BookID      string `json:"isbn"`
+//    BookName    string `json:"title"`
+//    BookAuthor  string `json:"author"`
+//}
 
 func main() {
     tmpl := template.Must(template.ParseFiles("index.html"))
@@ -56,16 +48,30 @@ func main() {
             fmt.Println(scanner.Text())
 
             if strings.Contains(scanner.Text(), "payload") {
+              payload := strings.Split(scanner.Text(),"payload:")[1]
+
+              //book := Book {
+              //  BookID: strings.Split(payload,"\"")[15],
+              //  BookName: strings.Split(payload,"\"")[3],
+              //  BookAuthor: strings.Split(payload,"\"")[7],
+              //}
+
+              //out, _ := json.Marshal(book)
+
               HomePageVars := PageVariables{
                 Success: true,
-                Result: ConvertBookStringToJson(strings.Split(scanner.Text(),"payload:")[1]),
+                BookID: strings.Split(payload,"\"")[16],
+                BookName: strings.Split(payload,"\"")[4],
+                BookAuthor: strings.Split(payload,"\"")[8],
               }
 
               tmpl.Execute(w, HomePageVars)
             } else {
               HomePageVars := PageVariables{
-                Success: true,
-                Result: "Error book doesn't exist",
+                Success: false,
+                BookID: "",
+                BookName: "",
+                BookAuthor: "",
               }
 
               tmpl.Execute(w, HomePageVars)
