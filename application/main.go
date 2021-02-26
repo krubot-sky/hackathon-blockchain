@@ -12,6 +12,7 @@ import (
 )
 
 type PageVariables struct {
+    SuccessFalse bool
 	Success      bool
 	BookID       string
   BookName     string
@@ -68,7 +69,7 @@ func main() {
               tmpl.Execute(w, HomePageVars)
             } else {
               HomePageVars := PageVariables{
-                Success: false,
+                SuccessFalse: true,
                 BookID: "",
                 BookName: "",
                 BookAuthor: "",
