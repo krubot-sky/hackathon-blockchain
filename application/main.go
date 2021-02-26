@@ -7,6 +7,7 @@ import (
     "os/exec"
     "fmt"
     "bufio"
+    "strings"
 )
 
 type PageVariables struct {
@@ -37,12 +38,21 @@ func main() {
         for scanner.Scan() {
             fmt.Println(scanner.Text())
 
-            HomePageVars := PageVariables{
-              Success: true,
-              Result: scanner.Text(),
-            }
+            if strings.Contains(scanner.Text(), "payload") {
+              HomePageVars := PageVariables{
+                Success: true,
+                Result: strings.Split(scanner.Text(),"payload:")[1],
+              }
 
-            tmpl.Execute(w, HomePageVars)
+              tmpl.Execute(w, HomePageVars)
+            } else {
+              HomePageVars := PageVariables{
+                Success: true,
+                Result: "Error book doesn't exist",
+              }
+
+              tmpl.Execute(w, HomePageVars)
+            }
         }
     })
 
