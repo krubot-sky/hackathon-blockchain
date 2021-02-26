@@ -2,17 +2,34 @@
 package main
 
 import (
+    "encoding/json"
     "html/template"
     "net/http"
     "os/exec"
     "fmt"
     "bufio"
     "strings"
+    "encoding/json"
 )
 
 type PageVariables struct {
 	Success      bool
 	Result       string
+}
+
+type Book struct {
+    Title       string `json:"title"`
+    Author      string `json:"author"`
+    Description string `json:"description"`
+    ISBN        string `json:"isbn"`
+    Owner       string `json:"owner"`
+}
+
+func ConvertBookStringToJson(bookString string) *Book {
+    book := new(Book)
+    _ = json.Unmarshal(bookString, book)
+
+    return book
 }
 
 func main() {
@@ -41,7 +58,7 @@ func main() {
             if strings.Contains(scanner.Text(), "payload") {
               HomePageVars := PageVariables{
                 Success: true,
-                Result: strings.Split(scanner.Text(),"payload:")[1],
+                Result: ConvertBookStringToJson(strings.Split(scanner.Text(),"payload:")[1]),
               }
 
               tmpl.Execute(w, HomePageVars)
